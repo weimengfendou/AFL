@@ -79,7 +79,7 @@ typedef int64_t  s64;
 #ifdef AFL_LLVM_PASS
 #  define AFL_R(x) (random() % (x))
 #else
-#  define R(x) (random() % (x))
+#  define R(x) (random() % (x)) //产生随机数
 #endif /* ^AFL_LLVM_PASS */
 
 #define STRINGIFY_INTERNAL(x) #x
@@ -88,7 +88,9 @@ typedef int64_t  s64;
 #define MEM_BARRIER() \
   __asm__ volatile("" ::: "memory")
 
-#define likely(_x)   __builtin_expect(!!(_x), 1)
-#define unlikely(_x)  __builtin_expect(!!(_x), 0)
+  //!!x 将0转化为布尔0，将非0转化为布尔1
+  //为什么用概率，因为在编译的时候不知道x的值，所以只能用概率来猜测
+#define likely(_x)   __builtin_expect(!!(_x), 1) //x很可能为真
+#define unlikely(_x)  __builtin_expect(!!(_x), 0) //x很可能为假
 
 #endif /* ! _HAVE_TYPES_H */

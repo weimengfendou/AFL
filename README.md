@@ -491,3 +491,536 @@ Questions? Concerns? Bug reports? Please use GitHub.
 There is also a mailing list for the project; to join, send a mail to
 <afl-users+subscribe@googlegroups.com>. Or, if you prefer to browse
 archives first, try: [https://groups.google.com/group/afl-users](https://groups.google.com/group/afl-users).
+
+```
+AFL
+├─ 📁.travis
+│  └─ 📄check_fuzzer_stats.sh
+├─ 📁dictionaries
+│  ├─ 📄gif.dict
+│  ├─ 📄html_tags.dict
+│  ├─ 📄jpeg.dict
+│  ├─ 📄js.dict
+│  ├─ 📄json.dict
+│  ├─ 📄pdf.dict
+│  ├─ 📄perl.dict
+│  ├─ 📄png.dict
+│  ├─ 📄README.dictionaries
+│  ├─ 📄regexp.dict
+│  ├─ 📄sql.dict
+│  ├─ 📄tiff.dict
+│  ├─ 📄webp.dict
+│  └─ 📄xml.dict
+├─ 📁docs
+│  ├─ 📁visualization
+│  │  └─ 📄afl_gzip.png
+│  ├─ 📁vuln_samples
+│  │  ├─ 📄bash-cmd-exec.var
+│  │  ├─ 📄bash-uninit-mem.var
+│  │  ├─ 📄ffmpeg-h264-bad-ptr-800m.mp4
+│  │  ├─ 📄ffmpeg-h264-bad-read.mp4
+│  │  ├─ 📄ffmpeg-h264-call-stack-overflow.mp4
+│  │  ├─ 📄file-fpu-exception.elf
+│  │  ├─ 📄firefox-bmp-leak.bmp
+│  │  ├─ 📄firefox-chrome-leak.jpg
+│  │  ├─ 📄firefox-gif-leak.gif
+│  │  ├─ 📄firefox-gif-leak2.gif
+│  │  ├─ 📄jxrlib-crash.jxr
+│  │  ├─ 📄jxrlib-crash2.jxr
+│  │  ├─ 📄jxrlib-crash3.jxr
+│  │  ├─ 📄jxrlib-crash4.jxr
+│  │  ├─ 📄lesspipe-cpio-bad-write.cpio
+│  │  ├─ 📄libjpeg-sos-leak.jpg
+│  │  ├─ 📄libjpeg-turbo-dht-leak.jpg
+│  │  ├─ 📄libtiff-bad-write.tif
+│  │  ├─ 📄libtiff-uninit-mem.tif
+│  │  ├─ 📄libtiff-uninit-mem2.tif
+│  │  ├─ 📄libtiff-uninit-mem3.tif
+│  │  ├─ 📄libtiff-uninit-mem4.tif
+│  │  ├─ 📄libxml2-bad-read.xml
+│  │  ├─ 📄msie-dht-leak.jpg
+│  │  ├─ 📄msie-jxr-mem-leak.jxr
+│  │  ├─ 📄msie-png-mem-leak.png
+│  │  ├─ 📄msie-tiff-mem-leak.tif
+│  │  ├─ 📄msie-zlib-dos.png
+│  │  ├─ 📄openssl-null-ptr.der
+│  │  ├─ 📄openssl-null-ptr2.der
+│  │  ├─ 📄photoshop-mem-leak.jpg
+│  │  ├─ 📄sqlite-bad-free.sql
+│  │  ├─ 📄sqlite-bad-ptr.sql
+│  │  ├─ 📄sqlite-bad-ptr2.sql
+│  │  ├─ 📄sqlite-bad-ptr3.sql
+│  │  ├─ 📄sqlite-heap-overflow.sql
+│  │  ├─ 📄sqlite-heap-overwrite.sql
+│  │  ├─ 📄sqlite-negative-memset.sql
+│  │  ├─ 📄sqlite-null-ptr1.sql
+│  │  ├─ 📄sqlite-null-ptr10.sql
+│  │  ├─ 📄sqlite-null-ptr11.sql
+│  │  ├─ 📄sqlite-null-ptr12.sql
+│  │  ├─ 📄sqlite-null-ptr13.sql
+│  │  ├─ 📄sqlite-null-ptr14.sql
+│  │  ├─ 📄sqlite-null-ptr15.sql
+│  │  ├─ 📄sqlite-null-ptr2.sql
+│  │  ├─ 📄sqlite-null-ptr3.sql
+│  │  ├─ 📄sqlite-null-ptr4.sql
+│  │  ├─ 📄sqlite-null-ptr5.sql
+│  │  ├─ 📄sqlite-null-ptr6.sql
+│  │  ├─ 📄sqlite-null-ptr7.sql
+│  │  ├─ 📄sqlite-null-ptr8.sql
+│  │  ├─ 📄sqlite-null-ptr9.sql
+│  │  ├─ 📄sqlite-oob-read.sql
+│  │  ├─ 📄sqlite-oob-write.sql
+│  │  ├─ 📄sqlite-stack-buf-overflow.sql
+│  │  ├─ 📄sqlite-stack-exhaustion.sql
+│  │  ├─ 📄sqlite-unint-mem.sql
+│  │  ├─ 📄sqlite-use-after-free.sql
+│  │  ├─ 📄strings-bfd-badptr.elf
+│  │  ├─ 📄strings-bfd-badptr2.elf
+│  │  ├─ 📄strings-stack-overflow
+│  │  ├─ 📄strings-unchecked-ctr.elf
+│  │  ├─ 📄tcpdump-arp-crash.pcap
+│  │  ├─ 📄tcpdump-ppp-crash.pcap
+│  │  ├─ 📄unrtf-arbitrary-read.rtf
+│  │  └─ 📄unzip-t-mem-corruption.zip
+│  ├─ 📄ChangeLog
+│  ├─ 📄COPYING
+│  ├─ 📄env_variables.txt
+│  ├─ 📄historical_notes.txt
+│  ├─ 📄INSTALL
+│  ├─ 📄life_pro_tips.txt
+│  ├─ 📄notes_for_asan.txt
+│  ├─ 📄parallel_fuzzing.txt
+│  ├─ 📄perf_tips.txt
+│  ├─ 📄QuickStartGuide.txt
+│  ├─ 📄sister_projects.txt
+│  ├─ 📄status_screen.txt
+│  └─ 📄technical_details.txt
+├─ 📁experimental
+│  ├─ 📁argv_fuzzing
+│  │  ├─ 📄argv-fuzz-inl.h
+│  │  ├─ 📄test.c
+│  │  └─ 📄test.txt
+│  ├─ 📁asan_cgroups
+│  │  └─ 📄limit_memory.sh
+│  ├─ 📁bash_shellshock
+│  │  └─ 📄shellshock-fuzz.diff
+│  ├─ 📁canvas_harness
+│  │  └─ 📄canvas_harness.html
+│  ├─ 📁clang_asm_normalize
+│  ├─ 📁crash_triage
+│  │  └─ 📄triage_crashes.sh
+│  ├─ 📁distributed_fuzzing
+│  │  └─ 📄sync_script.sh
+│  ├─ 📁libpng_no_checksum
+│  │  └─ 📄libpng-nocrc.patch
+│  ├─ 📁persistent_demo
+│  │  └─ 📄persistent_demo.c
+│  ├─ 📁post_library
+│  │  ├─ 📄post_library.so.c
+│  │  └─ 📄post_library_png.so.c
+│  └─ 📄README.experiments
+├─ 📁libdislocator
+│  ├─ 📄libdislocator.so.c
+│  ├─ 📄Makefile
+│  └─ 📄README.dislocator
+├─ 📁libtokencap
+│  ├─ 📄libtokencap.so.c
+│  ├─ 📄Makefile
+│  └─ 📄README.tokencap
+├─ 📁llvm_mode
+│  ├─ 📄afl-clang-fast.c
+│  ├─ 📄afl-llvm-pass.so.cc
+│  ├─ 📄afl-llvm-rt.o.c
+│  ├─ 📄Makefile
+│  └─ 📄README.llvm
+├─ 📁qemu_mode
+│  ├─ 📁patches
+│  │  ├─ 📄afl-qemu-cpu-inl.h
+│  │  ├─ 📄configure.diff
+│  │  ├─ 📄cpu-exec.diff
+│  │  ├─ 📄elfload.diff
+│  │  ├─ 📄memfd.diff
+│  │  └─ 📄syscall.diff
+│  ├─ 📄build_qemu_support.sh
+│  └─ 📄README.qemu
+├─ 📁testcases
+│  ├─ 📁archives
+│  │  ├─ 📁common
+│  │  │  ├─ 📁ar
+│  │  │  │  └─ 📄small_archive.a
+│  │  │  ├─ 📁bzip2
+│  │  │  │  └─ 📄small_archive.bz2
+│  │  │  ├─ 📁cab
+│  │  │  │  └─ 📄small_archive.cab
+│  │  │  ├─ 📁compress
+│  │  │  │  └─ 📄small_archive.Z
+│  │  │  ├─ 📁cpio
+│  │  │  │  └─ 📄small_archive.cpio
+│  │  │  ├─ 📁gzip
+│  │  │  │  └─ 📄small_archive.gz
+│  │  │  ├─ 📁lzo
+│  │  │  │  └─ 📄small_archive.lzo
+│  │  │  ├─ 📁rar
+│  │  │  │  └─ 📄small_archive.rar
+│  │  │  ├─ 📁tar
+│  │  │  │  └─ 📄small_archive.tar
+│  │  │  ├─ 📁xz
+│  │  │  │  └─ 📄small_archive.xz
+│  │  │  └─ 📁zip
+│  │  │     └─ 📄small_archive.zip
+│  │  └─ 📁exotic
+│  │     ├─ 📁arj
+│  │     │  └─ 📄small_archive.arj
+│  │     ├─ 📁lha
+│  │     │  └─ 📄small_archive.lha
+│  │     ├─ 📁lrzip
+│  │     │  └─ 📄small_archive.lrz
+│  │     ├─ 📁lzip
+│  │     │  └─ 📄small_archive.lz
+│  │     ├─ 📁lzma
+│  │     │  └─ 📄small_archive.lzma
+│  │     ├─ 📁rzip
+│  │     │  └─ 📄small_archive.rz
+│  │     └─ 📁zoo
+│  │        └─ 📄small_archive.zoo
+│  ├─ 📁images
+│  │  ├─ 📁bmp
+│  │  │  └─ 📄not_kitty.bmp
+│  │  ├─ 📁gif
+│  │  │  └─ 📄not_kitty.gif
+│  │  ├─ 📁ico
+│  │  │  └─ 📄not_kitty.ico
+│  │  ├─ 📁jp2
+│  │  │  └─ 📄not_kitty.jp2
+│  │  ├─ 📁jpeg
+│  │  │  └─ 📄not_kitty.jpg
+│  │  ├─ 📁jxr
+│  │  │  └─ 📄not_kitty.jxr
+│  │  ├─ 📁png
+│  │  │  ├─ 📄not_kitty.png
+│  │  │  ├─ 📄not_kitty_alpha.png
+│  │  │  ├─ 📄not_kitty_gamma.png
+│  │  │  └─ 📄not_kitty_icc.png
+│  │  ├─ 📁tiff
+│  │  │  └─ 📄not_kitty.tiff
+│  │  └─ 📁webp
+│  │     └─ 📄not_kitty.webp
+│  ├─ 📁multimedia
+│  │  └─ 📁h264
+│  │     └─ 📄small_movie.mp4
+│  ├─ 📁others
+│  │  ├─ 📁elf
+│  │  │  └─ 📄small_exec.elf
+│  │  ├─ 📁js
+│  │  │  └─ 📄small_script.js
+│  │  ├─ 📁pcap
+│  │  │  └─ 📄small_capture.pcap
+│  │  ├─ 📁pdf
+│  │  │  └─ 📄small.pdf
+│  │  ├─ 📁regexp
+│  │  │  ├─ 📄reg1
+│  │  │  ├─ 📄reg2
+│  │  │  ├─ 📄reg3
+│  │  │  └─ 📄reg4
+│  │  ├─ 📁rtf
+│  │  │  └─ 📄small_document.rtf
+│  │  ├─ 📁sql
+│  │  │  └─ 📄simple_queries.sql
+│  │  ├─ 📁text
+│  │  │  └─ 📄hello_world.txt
+│  │  └─ 📁xml
+│  │     └─ 📄small_document.xml
+│  └─ 📄README.testcases
+├─ 📄.gitignore
+├─ 📄.travis.yml
+├─ 📄afl-analyze.c
+├─ 📄afl-as.c
+├─ 📄afl-as.h
+├─ 📄afl-cmin
+├─ 📄afl-fuzz.c
+├─ 📄afl-gcc.c
+├─ 📄afl-gotcpu.c
+├─ 📄afl-plot
+├─ 📄afl-showmap.c
+├─ 📄afl-tmin.c
+├─ 📄afl-whatsup
+├─ 📄alloc-inl.h
+├─ 📄android-ashmem.h
+├─ 📄Android.bp
+├─ 📄config.h
+├─ 📄CONTRIBUTING.md
+├─ 📄debug.h
+├─ 📄hash.h
+├─ 📄LICENSE
+├─ 📄Makefile
+├─ 📄README.md
+├─ 📄test-instr.c
+├─ 📄test-libfuzzer-target.c
+└─ 📄types.h
+```
+```
+AFL
+├─ 📁.travis
+│  └─ 📄check_fuzzer_stats.sh
+├─ 📁dictionaries
+│  ├─ 📄gif.dict
+│  ├─ 📄html_tags.dict
+│  ├─ 📄jpeg.dict
+│  ├─ 📄js.dict
+│  ├─ 📄json.dict
+│  ├─ 📄pdf.dict
+│  ├─ 📄perl.dict
+│  ├─ 📄png.dict
+│  ├─ 📄README.dictionaries
+│  ├─ 📄regexp.dict
+│  ├─ 📄sql.dict
+│  ├─ 📄tiff.dict
+│  ├─ 📄webp.dict
+│  └─ 📄xml.dict
+├─ 📁docs
+│  ├─ 📁visualization
+│  │  └─ 📄afl_gzip.png
+│  ├─ 📁vuln_samples
+│  │  ├─ 📄bash-cmd-exec.var
+│  │  ├─ 📄bash-uninit-mem.var
+│  │  ├─ 📄ffmpeg-h264-bad-ptr-800m.mp4
+│  │  ├─ 📄ffmpeg-h264-bad-read.mp4
+│  │  ├─ 📄ffmpeg-h264-call-stack-overflow.mp4
+│  │  ├─ 📄file-fpu-exception.elf
+│  │  ├─ 📄firefox-bmp-leak.bmp
+│  │  ├─ 📄firefox-chrome-leak.jpg
+│  │  ├─ 📄firefox-gif-leak.gif
+│  │  ├─ 📄firefox-gif-leak2.gif
+│  │  ├─ 📄jxrlib-crash.jxr
+│  │  ├─ 📄jxrlib-crash2.jxr
+│  │  ├─ 📄jxrlib-crash3.jxr
+│  │  ├─ 📄jxrlib-crash4.jxr
+│  │  ├─ 📄lesspipe-cpio-bad-write.cpio
+│  │  ├─ 📄libjpeg-sos-leak.jpg
+│  │  ├─ 📄libjpeg-turbo-dht-leak.jpg
+│  │  ├─ 📄libtiff-bad-write.tif
+│  │  ├─ 📄libtiff-uninit-mem.tif
+│  │  ├─ 📄libtiff-uninit-mem2.tif
+│  │  ├─ 📄libtiff-uninit-mem3.tif
+│  │  ├─ 📄libtiff-uninit-mem4.tif
+│  │  ├─ 📄libxml2-bad-read.xml
+│  │  ├─ 📄msie-dht-leak.jpg
+│  │  ├─ 📄msie-jxr-mem-leak.jxr
+│  │  ├─ 📄msie-png-mem-leak.png
+│  │  ├─ 📄msie-tiff-mem-leak.tif
+│  │  ├─ 📄msie-zlib-dos.png
+│  │  ├─ 📄openssl-null-ptr.der
+│  │  ├─ 📄openssl-null-ptr2.der
+│  │  ├─ 📄photoshop-mem-leak.jpg
+│  │  ├─ 📄sqlite-bad-free.sql
+│  │  ├─ 📄sqlite-bad-ptr.sql
+│  │  ├─ 📄sqlite-bad-ptr2.sql
+│  │  ├─ 📄sqlite-bad-ptr3.sql
+│  │  ├─ 📄sqlite-heap-overflow.sql
+│  │  ├─ 📄sqlite-heap-overwrite.sql
+│  │  ├─ 📄sqlite-negative-memset.sql
+│  │  ├─ 📄sqlite-null-ptr1.sql
+│  │  ├─ 📄sqlite-null-ptr10.sql
+│  │  ├─ 📄sqlite-null-ptr11.sql
+│  │  ├─ 📄sqlite-null-ptr12.sql
+│  │  ├─ 📄sqlite-null-ptr13.sql
+│  │  ├─ 📄sqlite-null-ptr14.sql
+│  │  ├─ 📄sqlite-null-ptr15.sql
+│  │  ├─ 📄sqlite-null-ptr2.sql
+│  │  ├─ 📄sqlite-null-ptr3.sql
+│  │  ├─ 📄sqlite-null-ptr4.sql
+│  │  ├─ 📄sqlite-null-ptr5.sql
+│  │  ├─ 📄sqlite-null-ptr6.sql
+│  │  ├─ 📄sqlite-null-ptr7.sql
+│  │  ├─ 📄sqlite-null-ptr8.sql
+│  │  ├─ 📄sqlite-null-ptr9.sql
+│  │  ├─ 📄sqlite-oob-read.sql
+│  │  ├─ 📄sqlite-oob-write.sql
+│  │  ├─ 📄sqlite-stack-buf-overflow.sql
+│  │  ├─ 📄sqlite-stack-exhaustion.sql
+│  │  ├─ 📄sqlite-unint-mem.sql
+│  │  ├─ 📄sqlite-use-after-free.sql
+│  │  ├─ 📄strings-bfd-badptr.elf
+│  │  ├─ 📄strings-bfd-badptr2.elf
+│  │  ├─ 📄strings-stack-overflow
+│  │  ├─ 📄strings-unchecked-ctr.elf
+│  │  ├─ 📄tcpdump-arp-crash.pcap
+│  │  ├─ 📄tcpdump-ppp-crash.pcap
+│  │  ├─ 📄unrtf-arbitrary-read.rtf
+│  │  └─ 📄unzip-t-mem-corruption.zip
+│  ├─ 📄ChangeLog
+│  ├─ 📄COPYING
+│  ├─ 📄env_variables.txt
+│  ├─ 📄historical_notes.txt
+│  ├─ 📄INSTALL
+│  ├─ 📄life_pro_tips.txt
+│  ├─ 📄notes_for_asan.txt
+│  ├─ 📄parallel_fuzzing.txt
+│  ├─ 📄perf_tips.txt
+│  ├─ 📄QuickStartGuide.txt
+│  ├─ 📄sister_projects.txt
+│  ├─ 📄status_screen.txt
+│  └─ 📄technical_details.txt
+├─ 📁experimental
+│  ├─ 📁argv_fuzzing
+│  │  ├─ 📄argv-fuzz-inl.h
+│  │  ├─ 📄test.c
+│  │  └─ 📄test.txt
+│  ├─ 📁asan_cgroups
+│  │  └─ 📄limit_memory.sh
+│  ├─ 📁bash_shellshock
+│  │  └─ 📄shellshock-fuzz.diff
+│  ├─ 📁canvas_harness
+│  │  └─ 📄canvas_harness.html
+│  ├─ 📁clang_asm_normalize
+│  ├─ 📁crash_triage
+│  │  └─ 📄triage_crashes.sh
+│  ├─ 📁distributed_fuzzing
+│  │  └─ 📄sync_script.sh
+│  ├─ 📁libpng_no_checksum
+│  │  └─ 📄libpng-nocrc.patch
+│  ├─ 📁persistent_demo
+│  │  └─ 📄persistent_demo.c
+│  ├─ 📁post_library
+│  │  ├─ 📄post_library.so.c
+│  │  └─ 📄post_library_png.so.c
+│  └─ 📄README.experiments
+├─ 📁libdislocator
+│  ├─ 📄libdislocator.so.c
+│  ├─ 📄Makefile
+│  └─ 📄README.dislocator
+├─ 📁libtokencap
+│  ├─ 📄libtokencap.so.c
+│  ├─ 📄Makefile
+│  └─ 📄README.tokencap
+├─ 📁llvm_mode
+│  ├─ 📄afl-clang-fast.c
+│  ├─ 📄afl-llvm-pass.so.cc
+│  ├─ 📄afl-llvm-rt.o.c
+│  ├─ 📄Makefile
+│  └─ 📄README.llvm
+├─ 📁qemu_mode
+│  ├─ 📁patches
+│  │  ├─ 📄afl-qemu-cpu-inl.h
+│  │  ├─ 📄configure.diff
+│  │  ├─ 📄cpu-exec.diff
+│  │  ├─ 📄elfload.diff
+│  │  ├─ 📄memfd.diff
+│  │  └─ 📄syscall.diff
+│  ├─ 📄build_qemu_support.sh
+│  └─ 📄README.qemu
+├─ 📁testcases
+│  ├─ 📁archives
+│  │  ├─ 📁common
+│  │  │  ├─ 📁ar
+│  │  │  │  └─ 📄small_archive.a
+│  │  │  ├─ 📁bzip2
+│  │  │  │  └─ 📄small_archive.bz2
+│  │  │  ├─ 📁cab
+│  │  │  │  └─ 📄small_archive.cab
+│  │  │  ├─ 📁compress
+│  │  │  │  └─ 📄small_archive.Z
+│  │  │  ├─ 📁cpio
+│  │  │  │  └─ 📄small_archive.cpio
+│  │  │  ├─ 📁gzip
+│  │  │  │  └─ 📄small_archive.gz
+│  │  │  ├─ 📁lzo
+│  │  │  │  └─ 📄small_archive.lzo
+│  │  │  ├─ 📁rar
+│  │  │  │  └─ 📄small_archive.rar
+│  │  │  ├─ 📁tar
+│  │  │  │  └─ 📄small_archive.tar
+│  │  │  ├─ 📁xz
+│  │  │  │  └─ 📄small_archive.xz
+│  │  │  └─ 📁zip
+│  │  │     └─ 📄small_archive.zip
+│  │  └─ 📁exotic
+│  │     ├─ 📁arj
+│  │     │  └─ 📄small_archive.arj
+│  │     ├─ 📁lha
+│  │     │  └─ 📄small_archive.lha
+│  │     ├─ 📁lrzip
+│  │     │  └─ 📄small_archive.lrz
+│  │     ├─ 📁lzip
+│  │     │  └─ 📄small_archive.lz
+│  │     ├─ 📁lzma
+│  │     │  └─ 📄small_archive.lzma
+│  │     ├─ 📁rzip
+│  │     │  └─ 📄small_archive.rz
+│  │     └─ 📁zoo
+│  │        └─ 📄small_archive.zoo
+│  ├─ 📁images
+│  │  ├─ 📁bmp
+│  │  │  └─ 📄not_kitty.bmp
+│  │  ├─ 📁gif
+│  │  │  └─ 📄not_kitty.gif
+│  │  ├─ 📁ico
+│  │  │  └─ 📄not_kitty.ico
+│  │  ├─ 📁jp2
+│  │  │  └─ 📄not_kitty.jp2
+│  │  ├─ 📁jpeg
+│  │  │  └─ 📄not_kitty.jpg
+│  │  ├─ 📁jxr
+│  │  │  └─ 📄not_kitty.jxr
+│  │  ├─ 📁png
+│  │  │  ├─ 📄not_kitty.png
+│  │  │  ├─ 📄not_kitty_alpha.png
+│  │  │  ├─ 📄not_kitty_gamma.png
+│  │  │  └─ 📄not_kitty_icc.png
+│  │  ├─ 📁tiff
+│  │  │  └─ 📄not_kitty.tiff
+│  │  └─ 📁webp
+│  │     └─ 📄not_kitty.webp
+│  ├─ 📁multimedia
+│  │  └─ 📁h264
+│  │     └─ 📄small_movie.mp4
+│  ├─ 📁others
+│  │  ├─ 📁elf
+│  │  │  └─ 📄small_exec.elf
+│  │  ├─ 📁js
+│  │  │  └─ 📄small_script.js
+│  │  ├─ 📁pcap
+│  │  │  └─ 📄small_capture.pcap
+│  │  ├─ 📁pdf
+│  │  │  └─ 📄small.pdf
+│  │  ├─ 📁regexp
+│  │  │  ├─ 📄reg1
+│  │  │  ├─ 📄reg2
+│  │  │  ├─ 📄reg3
+│  │  │  └─ 📄reg4
+│  │  ├─ 📁rtf
+│  │  │  └─ 📄small_document.rtf
+│  │  ├─ 📁sql
+│  │  │  └─ 📄simple_queries.sql
+│  │  ├─ 📁text
+│  │  │  └─ 📄hello_world.txt
+│  │  └─ 📁xml
+│  │     └─ 📄small_document.xml
+│  └─ 📄README.testcases
+├─ 📄.gitignore
+├─ 📄.travis.yml
+├─ 📄afl-analyze.c
+├─ 📄afl-as.c
+├─ 📄afl-as.h
+├─ 📄afl-cmin
+├─ 📄afl-fuzz.c
+├─ 📄afl-gcc.c
+├─ 📄afl-gotcpu.c
+├─ 📄afl-plot
+├─ 📄afl-showmap.c
+├─ 📄afl-tmin.c
+├─ 📄afl-whatsup
+├─ 📄alloc-inl.h
+├─ 📄android-ashmem.h
+├─ 📄Android.bp
+├─ 📄config.h
+├─ 📄CONTRIBUTING.md
+├─ 📄debug.h
+├─ 📄hash.h
+├─ 📄LICENSE
+├─ 📄Makefile
+├─ 📄README.md
+├─ 📄test-instr.c
+├─ 📄test-libfuzzer-target.c
+└─ 📄types.h
+```

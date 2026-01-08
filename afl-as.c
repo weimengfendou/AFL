@@ -223,7 +223,7 @@ wrap_things_up:
 
 /* Process input file, generate modified_file. Insert instrumentation in all
    the appropriate places. */
-
+// 在汇编文件中插入 AFL 的覆盖率追踪代码
 static void add_instrumentation(void) {
 
   static u8 line[MAX_LINE];
@@ -257,6 +257,7 @@ static void add_instrumentation(void) {
 
   if (!outf) PFATAL("fdopen() failed");  
 
+  // 一行一行阅读，看需不需要插装
   while (fgets(line, MAX_LINE, inf)) {
 
     /* In some cases, we want to defer writing the instrumentation trampoline
@@ -270,7 +271,7 @@ static void add_instrumentation(void) {
       fprintf(outf, use_64bit ? trampoline_fmt_64 : trampoline_fmt_32,
               R(MAP_SIZE));
 
-      instrument_next = 0;
+      instrument_next = 0; //清空标志 instrument_next = 0，表示延迟插桩已经完成
       ins_lines++;
 
     }
@@ -371,7 +372,7 @@ static void add_instrumentation(void) {
 
     if (line[0] == '\t') {
 
-      if (line[1] == 'j' && line[2] != 'm' && R(100) < inst_ratio) {
+      if (line[1] == 'j' && line[2] != 'm' && R(100) < inst_ratio) { //排除无条件跳转
 
         fprintf(outf, use_64bit ? trampoline_fmt_64 : trampoline_fmt_32,
                 R(MAP_SIZE));

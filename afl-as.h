@@ -142,13 +142,17 @@ static const u8* trampoline_fmt_64 =
   "\n"
   ".align 4\n"
   "\n"
-  "leaq -(128+24)(%%rsp), %%rsp\n"
+  // 栈空间预留 + 保存被破坏寄存器的内容
+  "leaq -(128+24)(%%rsp), %%rsp\n" 
   "movq %%rdx,  0(%%rsp)\n"
   "movq %%rcx,  8(%%rsp)\n"
   "movq %%rax, 16(%%rsp)\n"
-  "movq $0x%08x, %%rcx\n"
-  "call __afl_maybe_log\n"
-  "movq 16(%%rsp), %%rax\n"
+  //保存当前块ID（随机数）到rcx
+  "movq $0x%08x, %%rcx\n" 
+  //调用插装函数
+  "call __afl_maybe_log\n" 
+  //恢复寄存器的元素内容 + 恢复栈
+  "movq 16(%%rsp), %%rax\n" 
   "movq  8(%%rsp), %%rcx\n"
   "movq  0(%%rsp), %%rdx\n"
   "leaq (128+24)(%%rsp), %%rsp\n"
@@ -174,9 +178,9 @@ static const u8* main_payload_32 =
   "\n"
   "  /* Check if SHM region is already mapped. */\n"
   "\n"
-  "  movl  __afl_area_ptr, %edx\n"
-  "  testl %edx, %edx\n"
-  "  je    __afl_setup\n"
+  "  movl  __afl_area_ptr, %edx\n" //把共享内存（__afl__area_ptr 是afl 全局变量，指向共享内存）地址加载到edx
+  "  testl %edx, %edx\n" //检查是否为0
+  "  je    __afl_setup\n" //为0就说明共享内存还没有映射，所以先初始化
   "\n"
   "__afl_store:\n"
   "\n"
@@ -184,7 +188,9 @@ static const u8* main_payload_32 =
   "     is a double-XOR way of doing this without tainting another register,\n"
   "     and we use it on 64-bit systems; but it's slower for 32-bit ones. */\n"
   "\n"
-#ifndef COVERAGE_ONLY
+// 其中ifdef 的意思是，如果定义了什么，就编译下面的代码
+// ifndef 的意思是，如果没有定义什么，就编译下面的代码
+  #ifndef COVERAGE_ONLY //这个是32位的覆盖率代码 类比与c代码就是：idx = cur_loc ^ prev_loc ; prev_loc = cur_loc >> 1
   "  movl __afl_prev_loc, %edi\n"
   "  xorl %ecx, %edi\n"
   "  shrl $1, %ecx\n"
@@ -196,14 +202,14 @@ static const u8* main_payload_32 =
 #ifdef SKIP_COUNTS
   "  orb  $1, (%edx, %edi, 1)\n"
 #else
-  "  incb (%edx, %edi, 1)\n"
-#endif /* ^SKIP_COUNTS */
+  "  incb (%edx, %edi, 1)\n"  // __afl_area_ptr[ edge_id ]++; incb让这个一字节加1
+#endif /* ^SKIP_COUNTS */ //endif 的意思是，结束上面的 ifdef 或 ifndef
   "\n"
-  "__afl_return:\n"
+  "__afl_return:\n" //return就是结束了
   "\n"
   "  addb $127, %al\n"
   "  sahf\n"
-  "  ret\n"
+  "  ret\n"  //到这里结束
   "\n"
   ".align 8\n"
   "\n"
@@ -416,8 +422,11 @@ static const u8* main_payload_64 =
   "  /* Calculate and store hit for the code location specified in rcx. */\n"
   "\n"
 #ifndef COVERAGE_ONLY
+  // idx = prev_loc ^ cur_loc; 
   "  xorq __afl_prev_loc(%rip), %rcx\n"
+  // prev_loc = cur_loc;
   "  xorq %rcx, __afl_prev_loc(%rip)\n"
+  // prev_loc = prev_loc >> 1;
   "  shrq $1, __afl_prev_loc(%rip)\n"
 #endif /* ^!COVERAGE_ONLY */
   "\n"

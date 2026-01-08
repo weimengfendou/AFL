@@ -150,9 +150,9 @@ static s32 forksrv_pid,               /* PID of the fork server           */
 
 EXP_ST u8* trace_bits;                /* SHM with instrumentation bitmap  */
 
-EXP_ST u8  virgin_bits[MAP_SIZE],     /* Regions yet untouched by fuzzing */
-           virgin_tmout[MAP_SIZE],    /* Bits we haven't seen in tmouts   */
-           virgin_crash[MAP_SIZE];    /* Bits we haven't seen in crashes  */
+EXP_ST u8  virgin_bits[MAP_SIZE],     /* Regions yet untouched by fuzzing */ //普通路径
+           virgin_tmout[MAP_SIZE],    /* Bits we haven't seen in tmouts   */ //超时路径
+           virgin_crash[MAP_SIZE];    /* Bits we haven't seen in crashes  */ //崩溃路径
 
 static u8  var_bytes[MAP_SIZE];       /* Bytes that appear to be variable */
 
@@ -903,7 +903,8 @@ EXP_ST void read_bitmap(u8* fname) {
 
    This function is called after every exec() on a fairly large buffer, so
    it needs to be fast. We do this in 32-bit and 64-bit flavors. */
-
+// has_new_bits() 函数比较当前执行轨迹与历史记录，检测是否有新的覆盖率：
+// 返回0表示没有新路径，1表示只是增加了访问次数 2表示发现了全新路径
 static inline u8 has_new_bits(u8* virgin_map) {
 
 #ifdef WORD_SIZE_64
@@ -911,25 +912,25 @@ static inline u8 has_new_bits(u8* virgin_map) {
   u64* current = (u64*)trace_bits;
   u64* virgin  = (u64*)virgin_map;
 
-  u32  i = (MAP_SIZE >> 3);
+  u32  i = (MAP_SIZE >> 3); //64位机器，每次扫8字节
 
 #else
 
   u32* current = (u32*)trace_bits;
   u32* virgin  = (u32*)virgin_map;
 
-  u32  i = (MAP_SIZE >> 2);
+  u32  i = (MAP_SIZE >> 2); //32位机器，每次扫4字节
 
 #endif /* ^WORD_SIZE_64 */
 
   u8   ret = 0;
 
-  while (i--) {
+  while (i--) { //一个一个看
 
     /* Optimize for (*current & *virgin) == 0 - i.e., no bits in current bitmap
        that have not been already cleared from the virgin map - since this will
        almost always be the case. */
-
+    // 这里的代码等价于 if ((*current) && (*current & *virgin)) { 也就是unlikely只是提前告诉cpu这里的值大概率为0，但是也不一定只是0，只是提前告知，不是确定下来的
     if (unlikely(*current) && unlikely(*current & *virgin)) {
 
       if (likely(ret < 2)) {
@@ -958,16 +959,16 @@ static inline u8 has_new_bits(u8* virgin_map) {
 
       }
 
-      *virgin &= ~*current;
+      *virgin &= ~*current; //把当前执行轨迹的覆盖率从virgin中清除掉
 
     }
 
-    current++;
+    current++; //每次加加跳跃4个或者8个字节
     virgin++;
 
   }
 
-  if (ret && virgin_map == virgin_bits) bitmap_changed = 1;
+  if (ret && virgin_map == virgin_bits) bitmap_changed = 1; //这里比较的是地址是否相等，如果一开始传入的是virgin_bits的地址，那么就会相等
 
   return ret;
 
@@ -1265,7 +1266,7 @@ static void minimize_bits(u8* dst, u8* src) {
 static void update_bitmap_score(struct queue_entry* q) {
 
   u32 i;
-  u64 fav_factor = q->exec_us * q->len;
+  u64 fav_factor = q->exec_us * q->len; //q->exec_us是执行时间，q-->len是输入文件大小 这个计算的是测试用例执行一次所花费的时间
 
   /* For every byte set in trace_bits[], see if there is a previous winner,
      and how it compares to us. */
@@ -1277,14 +1278,14 @@ static void update_bitmap_score(struct queue_entry* q) {
        if (top_rated[i]) {
 
          /* Faster-executing or smaller test cases are favored. */
-
+        // 
          if (fav_factor > top_rated[i]->exec_us * top_rated[i]->len) continue;
 
          /* Looks like we're going to win. Decrease ref count for the
             previous winner, discard its trace_bits[] if necessary. */
 
-         if (!--top_rated[i]->tc_ref) {
-           ck_free(top_rated[i]->trace_mini);
+         if (!--top_rated[i]->tc_ref) { //tc_ref 是引用计数：记录这个测试用例作为多少个 top_rated 的最优者
+           ck_free(top_rated[i]->trace_mini); //每一个top_rated[i]记录一个哦，就是假如这个top_rated[i]不再是任何一个字节的最优者了，那么就释放它的trace_mini
            top_rated[i]->trace_mini = 0;
          }
 
@@ -1295,12 +1296,12 @@ static void update_bitmap_score(struct queue_entry* q) {
        top_rated[i] = q;
        q->tc_ref++;
 
-       if (!q->trace_mini) {
+       if (!q->trace_mini) { //当前测试用例 q 如果没有压缩 bitmap，就生成一个压缩版的 bitmap
          q->trace_mini = ck_alloc(MAP_SIZE >> 3);
-         minimize_bits(q->trace_mini, trace_bits);
+         minimize_bits(q->trace_mini, trace_bits); //压缩bitmap
        }
 
-       score_changed = 1;
+       score_changed = 1; //标记 score_changed，以便 AFL 知道“我们找到了一条更有价值的新路径”
 
      }
 
@@ -2567,7 +2568,9 @@ static void show_stats(void);
 /* Calibrate a new test case. This is done when processing the input directory
    to warn about flaky or otherwise problematic test cases early on; and when
    new paths are discovered to detect variable behavior and so on. */
-
+// AFL 测试用例质量评估和路径稳定性检查
+// 函数返回一个 u8 fault：
+// 表示校准结果（程序是否 crash、是否有覆盖、是否无效等）
 static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
                          u32 handicap, u8 from_queue) {
 
@@ -2610,7 +2613,8 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
   }
 
   start_us = get_cur_time_us();
-
+  // 多次执行测试用例 
+  // 检测可变行为（flaky paths） 同时增强结果的稳定性
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
 
     u32 cksum;
@@ -2644,7 +2648,7 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
 
         for (i = 0; i < MAP_SIZE; i++) {
 
-          if (!var_bytes[i] && first_trace[i] != trace_bits[i]) {
+          if (!var_bytes[i] && first_trace[i] != trace_bits[i]) { //变行为 var_behavior
 
             var_bytes[i] = 1;
             stage_max    = CAL_CYCLES_LONG;
@@ -2674,8 +2678,8 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
   /* OK, let's collect some stats about the performance of this test case.
      This is used for fuzzing air time calculations in calculate_score(). */
 
-  q->exec_us     = (stop_us - start_us) / stage_max;
-  q->bitmap_size = count_bytes(trace_bits);
+  q->exec_us     = (stop_us - start_us) / stage_max; // 计算平均每次执行所需的微秒数
+  q->bitmap_size = count_bytes(trace_bits); //
   q->handicap    = handicap;
   q->cal_failed  = 0;
 
@@ -3159,7 +3163,7 @@ static void write_crash_readme(void) {
 /* Check if the result of an execve() during routine fuzzing is interesting,
    save or queue the input test case for further analysis if so. Returns 1 if
    entry is saved, 0 otherwise. */
-
+// save_if_interesting() 决定一个执行结果是否值得“留下来”，以及“留到哪里”
 static u8 save_if_interesting(char** argv, void* mem, u32 len, u8 fault) {
 
   u8  *fn = "";
@@ -4742,18 +4746,20 @@ static u32 choose_block_len(u32 limit) {
 /* Calculate case desirability score to adjust the length of havoc fuzzing.
    A helper function for fuzz_one(). Maybe some of these constants should
    go into config.h. */
-
+// 计算测试用例的模糊测试优先级
+// 用来调整 fuzzing 的资源分配，让 AFL 更聪明地选择哪些测试用例去大量变异
 static u32 calculate_score(struct queue_entry* q) {
 
-  u32 avg_exec_us = total_cal_us / total_cal_cycles;
-  u32 avg_bitmap_size = total_bitmap_size / total_bitmap_entries;
+  u32 avg_exec_us = total_cal_us / total_cal_cycles; // 计算所有测试用例的平均执行时间
+  u32 avg_bitmap_size = total_bitmap_size / total_bitmap_entries; // 计算所有测试用例的平均覆盖率大小
   u32 perf_score = 100;
 
   /* Adjust score based on execution speed of this path, compared to the
      global average. Multiplier ranges from 0.1x to 3x. Fast inputs are
      less expensive to fuzz, so we're giving them more air time. */
-
-  if (q->exec_us * 0.1 > avg_exec_us) perf_score = 10;
+  
+     // 根据测试用例的执行速度来调整分数，执行速度越快，分数越高
+  if (q->exec_us * 0.1 > avg_exec_us) perf_score = 10; 
   else if (q->exec_us * 0.25 > avg_exec_us) perf_score = 25;
   else if (q->exec_us * 0.5 > avg_exec_us) perf_score = 50;
   else if (q->exec_us * 0.75 > avg_exec_us) perf_score = 75;
@@ -4763,7 +4769,7 @@ static u32 calculate_score(struct queue_entry* q) {
 
   /* Adjust score based on bitmap size. The working theory is that better
      coverage translates to better targets. Multiplier from 0.25x to 3x. */
-
+  // 根据测试用例的覆盖率大小来调整分数，覆盖率越大，分数越高
   if (q->bitmap_size * 0.3 > avg_bitmap_size) perf_score *= 3;
   else if (q->bitmap_size * 0.5 > avg_bitmap_size) perf_score *= 2;
   else if (q->bitmap_size * 0.75 > avg_bitmap_size) perf_score *= 1.5;
@@ -4774,7 +4780,9 @@ static u32 calculate_score(struct queue_entry* q) {
   /* Adjust score based on handicap. Handicap is proportional to how late
      in the game we learned about this path. Latecomers are allowed to run
      for a bit longer until they catch up with the rest. */
-
+  // 根据测试用例的 handicap 来调整分数，handicap 越大，分数越高
+  // 新人玩家刚加入，让他多打几轮以跟上老玩家
+  // 帮助新加入的样例
   if (q->handicap >= 4) {
 
     perf_score *= 4;
@@ -4790,7 +4798,7 @@ static u32 calculate_score(struct queue_entry* q) {
   /* Final adjustment based on input depth, under the assumption that fuzzing
      deeper test cases is more likely to reveal stuff that can't be
      discovered with traditional fuzzers. */
-
+// 深度越深 → 更有可能发现新奇路径 → 增加优先级
   switch (q->depth) {
 
     case 0 ... 3:   break;
@@ -4803,7 +4811,7 @@ static u32 calculate_score(struct queue_entry* q) {
 
   /* Make sure that we don't go over limit. */
 
-  if (perf_score > HAVOC_MAX_MULT * 100) perf_score = HAVOC_MAX_MULT * 100;
+  if (perf_score > HAVOC_MAX_MULT * 100) perf_score = HAVOC_MAX_MULT * 100; //避免分数过大
 
   return perf_score;
 
@@ -5302,14 +5310,14 @@ static u8 fuzz_one(char** argv) {
 
     stage_cur_byte = stage_cur >> 3;
 
-    FLIP_BIT(out_buf, stage_cur);
+    FLIP_BIT(out_buf, stage_cur); //处理
     FLIP_BIT(out_buf, stage_cur + 1);
     FLIP_BIT(out_buf, stage_cur + 2);
     FLIP_BIT(out_buf, stage_cur + 3);
 
     if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
 
-    FLIP_BIT(out_buf, stage_cur);
+    FLIP_BIT(out_buf, stage_cur); //恢复
     FLIP_BIT(out_buf, stage_cur + 1);
     FLIP_BIT(out_buf, stage_cur + 2);
     FLIP_BIT(out_buf, stage_cur + 3);
@@ -6691,7 +6699,8 @@ abandon_entry:
 
 
 /* Grab interesting test cases from other fuzzers. */
-
+// AFL 支持多 fuzzer 并行运行，每个 fuzzer 都有自己的队列（queue）。为了不重复工作，
+// fuzzer 会定期把自己发现的好用例同步到其他 fuzzer。这个函数就是实现这个同步的逻辑。
 static void sync_fuzzers(char** argv) {
 
   DIR* sd;
@@ -6870,7 +6879,7 @@ static void handle_timeout(int sig) {
 /* Do a PATH search and find target binary to see that it exists and
    isn't a shell script - a common and painful mistake. We also check for
    a valid ELF header and for evidence of AFL instrumentation. */
-
+ 
 EXP_ST void check_binary(u8* fname) {
 
   u8* env_path = 0;
@@ -7794,7 +7803,7 @@ int main(int argc, char** argv) {
 
   gettimeofday(&tv, &tz);
   srandom(tv.tv_sec ^ tv.tv_usec ^ getpid());
-
+  // 处理命令参数行
   while ((opt = getopt(argc, argv, "+i:o:f:m:b:t:T:dnCB:S:M:x:QV")) > 0)
 
     switch (opt) {
@@ -8045,7 +8054,7 @@ int main(int argc, char** argv) {
   init_count_class16();
 
   setup_dirs_fds();
-  read_testcases();
+  read_testcases(); //读取种子文件
   load_auto();
 
   pivot_inputs();
@@ -8067,7 +8076,7 @@ int main(int argc, char** argv) {
   else
     use_argv = argv + optind;
 
-  perform_dry_run(use_argv);
+  perform_dry_run(use_argv); //对初始测试用例进行一次执行，确保程序能跑通，并获得初始的覆盖率信息
 
   cull_queue();
 
@@ -8088,7 +8097,7 @@ int main(int argc, char** argv) {
     if (stop_soon) goto stop_fuzzing;
   }
 
-  while (1) {
+  while (1) { //不断测试
 
     u8 skipped_fuzz;
 
